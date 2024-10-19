@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Facturas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @media (max-width: 768px) {
+            .table-responsive {
+                overflow-x: auto;
+            }
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #ffffff;
+            min-width: 250px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0;
+            margin-top: 0.5rem;
+        }
+        .dropdown-content .menu-section {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0.5rem 0;
+        }
+        .dropdown-content .menu-section:last-child {
+            border-bottom: none;
+        }
+        .dropdown-content .menu-section-title {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .dropdown-content a {
+            color: #374151;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        .dropdown-content a:hover {
+            background-color: #f3f4f6;
+        }
+        .dropdown-content a:active {
+            background-color: #e5e7eb;
+        }
+        .show {
+            display: block;
+            animation: fadeIn 0.2s ease-out;
+        }
+        .avatar-button {
+            transition: all 0.2s ease-in-out;
+        }
+        .avatar-button.active {
+            transform: rotate(180deg);
+            background-color: #e5e7eb;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .nav-link {
+            position: relative;
+            padding: 0.5rem 1rem;
+            color: #374151;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .nav-link:hover {
+            color: #1d4ed8;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #1d4ed8;
+            transform: scaleX(0);
+            transition: transform 0.2s;
+        }
+        .nav-link:hover::after {
+            transform: scaleX(1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <a href="#" class="flex items-center">
+                        <img src="../Imagenes/logo.png" alt="Logo de la empresa" class="h-8 w-auto">
+                    </a>
+                </div>
+                
+                <div class="flex items-center space-x-6">
+
+                    <!-- Notificaciones -->
+                    <button class="relative p-2 text-gray-600 hover:text-blue-600 transition-colors">
+                        <i data-lucide="bell" class="w-6 h-6"></i>
+                        <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">2</span>
+                    </button>
+
+                    <!-- Usuario -->
+                    <div class="dropdown">
+                        <button onclick="toggleDropdown()" class="avatar-button flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 focus:outline-none hover:bg-gray-300 transition-colors">
+                            <i data-lucide="user" class="w-6 h-6 text-gray-600"></i>
+                        </button>
+                        <div id="userDropdown" class="dropdown-content">
+                            <div class="menu-section">
+                                <div class="menu-section-title">Gestión</div>
+                                <a href="inventario.html" class="group">
+                                    <i data-lucide="file-text" class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-500"></i>
+                                    <span>Inventario</span>
+                                </a>
+                                <a href="#" class="group">
+                                    <i data-lucide="trending-up" class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-500"></i>
+                                    <span>Ventas</span>
+                                </a>
+                            </div>
+                            <div class="menu-section">
+                                <div class="menu-section-title">Cuenta</div>
+                                <a href="#" onclick="handleMenuClick('editar-perfil')" class="group">
+                                    <i data-lucide="user" class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-500"></i>
+                                    <span>Editar perfil</span>
+                                </a>
+                                <a href="#" onclick="handleMenuClick('cambiar-contrasena')" class="group">
+                                    <i data-lucide="key" class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-500"></i>
+                                    <span>Cambiar contraseña</span>
+                                </a>
+                                <a href="#" onclick="handleMenuClick('configuracion')" class="group">
+                                    <i data-lucide="settings" class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-500"></i>
+                                    <span>Configuración</span>
+                                </a>
+                            </div>
+                            <div class="menu-section">
+                                <a href="#" onclick="handleMenuClick('cerrar-sesion')" class="group">
+                                    <i data-lucide="log-out" class="w-5 h-5 mr-3 text-gray-400 group-hover:text-red-500"></i>
+                                    <span class="text-red-500">Cerrar sesión</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-4 max-w-4xl">
+        <div class="bg-white shadow-md rounded-lg p-6 mt-4">
+            <h2 class="text-2xl font-bold mb-6">Generar Factura Profesional</h2>
+            <form id="invoiceForm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label for="name" class="block mb-1">Nombre del Cliente</label>
+                        <input id="name" name="name" class="w-full p-2 border rounded" required>
+                    </div>
+                    <div>
+                        <label for="email" class="block mb-1">Correo Electrónico del Cliente</label>
+                        <input id="email" name="email" type="email" class="w-full p-2 border rounded" required>
+                    </div>
+                    <div>
+                        <label for="phone" class="block mb-1">Teléfono del Cliente</label>
+                        <input id="phone" name="phone" type="tel" class="w-full p-2 border rounded" required>
+                    </div>
+                    <div>
+                        <label for="address" class="block mb-1">Dirección del Cliente</label>
+                        <input id="address" name="address" class="w-full p-2 border rounded" required>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label for="search" class="block mb-1">Buscar productos (por código o nombre)</label>
+                    <input id="search" class="w-full p-2 border rounded" placeholder="Ingrese código o nombre del producto">
+                </div>
+
+                <div class="mb-6 table-responsive">
+                    <table class="w-full border-collapse border">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-2 text-left">Código</th>
+                                <th class="p-2 text-left">Nombre</th>
+                                <th class="p-2 text-left">Precio</th>
+                                <th class="p-2 text-left">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productList"></tbody>
+                    </table>
+                </div>
+
+                <div class="mb-6 table-responsive">
+                    <h3 class="text-lg font-semibold mb-2">Productos Seleccionados</h3>
+                    <table class="w-full border-collapse border">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-2 text-left">Código</th>
+                                <th class="p-2 text-left">Nombre</th>
+                                <th class="p-2 text-left">Precio</th>
+                                <th class="p-2 text-left">Cantidad</th>
+                                <th class="p-2 text-left">Total</th>
+                                <th class="p-2 text-left">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="selectedProductList"></tbody>
+                    </table>
+                </div>
+
+                <div class="text-right mb-6">
+                    <p class="text-xl font-bold">Total: $<span id="totalAmount">0.00</span></p>
+                </div>
+
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Generar y Descargar Factura</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        const productos = [
+            { codigo: 'P001', nombre: 'Laptop', precio: 999.99 },
+            { codigo: 'P002', nombre: 'Smartphone', precio: 599.99 },
+            { codigo: 'P003', nombre: 'Auriculares', precio: 149.99 },
+            { codigo: 'P004', nombre: 'Monitor', precio: 299.99 },
+            { codigo: 'P005', nombre: 'Teclado', precio: 79.99 },
+        ];
+
+        const productosSeleccionados = [];
+        const cantidades = {};
+
+        function renderizarProductos() {
+            const listaProductos = document.getElementById('productList');
+            listaProductos.innerHTML = '';
+            const terminoBusqueda = document.getElementById('search').value.toLowerCase();
+
+            productos.forEach(producto => {
+                if (producto.codigo.toLowerCase().includes(terminoBusqueda) || producto.nombre.toLowerCase().includes(terminoBusqueda)) {
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                        <td class="p-2">${producto.codigo}</td>
+                        <td class="p-2">${producto.nombre}</td>
+                        <td  class="p-2">$${producto.precio.toFixed(2)}</td>
+                        <td class="p-2">
+                            <button type="button" class="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600" onclick="agregarProducto('${producto.codigo}')">
+                                Agregar
+                            </button>
+                        </td>
+                    `;
+                    listaProductos.appendChild(fila);
+                }
+            });
+        }
+
+        function renderizarProductosSeleccionados() {
+            const listaProductosSeleccionados = document.getElementById('selectedProductList');
+            listaProductosSeleccionados.innerHTML = '';
+
+            productosSeleccionados.forEach(producto => {
+                const fila = document.createElement('tr');
+                const cantidad = cantidades[producto.codigo] || 0;
+                const total = producto.precio * cantidad;
+                fila.innerHTML = `
+                    <td class="p-2">${producto.codigo}</td>
+                    <td class="p-2">${producto.nombre}</td>
+                    <td class="p-2">$${producto.precio.toFixed(2)}</td>
+                    <td class="p-2">
+                        <input type="number" min="1" value="${cantidad}" onchange="actualizarCantidad('${producto.codigo}', this.value)" class="w-20 p-1 border rounded">
+                    </td>
+                    <td class="p-2">$${total.toFixed(2)}</td>
+                    <td class="p-2">
+                        <button type="button" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600" onclick="eliminarProducto('${producto.codigo}')">
+                            Eliminar
+                        </button>
+                    </td>
+                `;
+                listaProductosSeleccionados.appendChild(fila);
+            });
+
+            actualizarTotal();
+        }
+
+        function agregarProducto(codigo) {
+            const producto = productos.find(p => p.codigo === codigo);
+            if (producto && !productosSeleccionados.find(p => p.codigo === codigo)) {
+                productosSeleccionados.push(producto);
+                cantidades[codigo] = 1;
+                renderizarProductosSeleccionados();
+            }
+        }
+
+        function eliminarProducto(codigo) {
+            const index = productosSeleccionados.findIndex(p => p.codigo === codigo);
+            if (index !== -1) {
+                productosSeleccionados.splice(index, 1);
+                delete cantidades[codigo];
+                renderizarProductosSeleccionados();
+            }
+        }
+
+        function actualizarCantidad(codigo, cantidad) {
+            cantidades[codigo] = parseInt(cantidad) || 0;
+            renderizarProductosSeleccionados();
+        }
+
+        function actualizarTotal() {
+            const total = productosSeleccionados.reduce((suma, producto) => {
+                return suma + (producto.precio * (cantidades[producto.codigo] || 0));
+            }, 0);
+            document.getElementById('totalAmount').textContent = total.toFixed(2);
+        }
+
+        document.getElementById('search').addEventListener('input', renderizarProductos);
+        document.getElementById('invoiceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            generarFactura();
+        });
+
+        function generarFactura() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const numeroFactura = Math.floor(100000 + Math.random() * 900000);
+            const fecha = new Date().toLocaleDateString();
+            const cliente = {
+                nombre: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                telefono: document.getElementById('phone').value,
+                direccion: document.getElementById('address').value,
+            };
+
+            // Encabezado de la factura
+            doc.setFontSize(18);
+            doc.text('Factura Proforma', 105, 20, null, null, 'center');
+            doc.setFontSize(12);
+            doc.text(`Numero de factura: ${numeroFactura}`, 20, 30);
+            doc.text(`Fecha: ${fecha}`, 20, 40);
+
+            // Información del cliente
+            doc.text('Información del Cliente:', 20, 55);
+            doc.text(`Nombre: ${cliente.nombre}`, 20, 65);
+            doc.text(`Email: ${cliente.email}`, 20, 75);
+            doc.text(`Teléfono: ${cliente.telefono}`, 20, 85);
+            doc.text(`Dirección: ${cliente.direccion}`, 20, 95);
+
+            // Detalles del producto
+            const productosFactura = productosSeleccionados.map(producto => {
+                const cantidad = cantidades[producto.codigo] || 0;
+                const total = producto.precio * cantidad;
+                return [producto.nombre, cantidad, `$${producto.precio.toFixed(2)}`, `$${total.toFixed(2)}`];
+            });
+
+            doc.autoTable({
+                startY: 105,
+                head: [['Producto', 'Cantidad', 'Precio Unitario', 'Total']],
+                body: productosFactura,
+            });
+
+            // Total
+            const totalGeneral = productosSeleccionados.reduce((suma, producto) => {
+                return suma + (producto.precio * (cantidades[producto.codigo] || 0));
+            }, 0);
+            doc.text(`Total: $${totalGeneral.toFixed(2)}`, 150, doc.lastAutoTable.finalY + 10);
+
+            // Guardar el PDF
+            doc.save(`factura_${numeroFactura}.pdf`);
+
+            // Mostrar mensaje de confirmación
+            alert(`La factura ha sido generada y descargada. Número de factura: ${numeroFactura}`);
+        }
+
+        renderizarProductos();
+
+        // Dropdown functionality
+        function toggleDropdown() {
+            document.getElementById("userDropdown").classList.toggle("show");
+        }
+
+        function handleMenuClick(option) {
+            console.log("Clicked:", option);
+            // Add your logic for each menu item here
+            toggleDropdown();
+        }
+
+        // Close the dropdown if the user clicks outside of it
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropdown button')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+
+        // Tab functionality
+        function setActiveTab(tabId) {
+            // Add your tab switching logic here if needed
+            console.log("Switched to tab:", tabId);
+        }
+    </script>
+</body>
+</html>

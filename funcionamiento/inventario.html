@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Inventario Empresarial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @media (max-width: 768px) {
+            .table-responsive {
+                overflow-x: auto;
+            }
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #ffffff;
+            min-width: 250px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0;
+            margin-top: 0.5rem;
+        }
+        .dropdown-content .menu-section {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0.5rem 0;
+        }
+        .dropdown-content .menu-section:last-child {
+            border-bottom: none;
+        }
+        .dropdown-content .menu-section-title {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .dropdown-content a {
+            color: #374151;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        .dropdown-content a:hover {
+            background-color: #f3f4f6;
+        }
+        .dropdown-content a:active {
+            background-color: #e5e7eb;
+        }
+        .show {
+            display: block;
+            animation: fadeIn 0.2s ease-out;
+        }
+        .avatar-button {
+            transition: all 0.2s ease-in-out;
+        }
+        .avatar-button.active {
+            transform: rotate(180deg);
+            background-color: #e5e7eb;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .nav-link {
+            position: relative;
+            padding: 0.5rem 1rem;
+            color: #374151;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .nav-link:hover {
+            color: #1d4ed8;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #1d4ed8;
+            transform: scaleX(0);
+            transition: transform 0.2s;
+        }
+        .nav-link:hover::after {
+            transform: scaleX(1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <a href="#" class="flex items-center">
+                        <img src="../Imagenes/logo.png" alt="Logo de la empresa" class="h-8 w-auto">
+                    </a>
+                </div>
+                
+                <div class="flex items-center space-x-6">
+
+                    <!-- Notificaciones -->
+                    <button class="relative p-2 text-gray-600 hover:text-blue-600 transition-colors">
+                        <i data-lucide="bell" class="w-6 h-6"></i>
+                        <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">2</span>
+                    </button>
+
+                    <!-- Usuario -->
+                    <div class="dropdown">
+                        <button onclick="toggleDropdown()" class="avatar-button flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 focus:outline-none hover:bg-gray-300 transition-colors">
+                            <i data-lucide="user" class="w-6 h-6 text-gray-600"></i>
+                        </button>
+                        <div id="userDropdown" class="dropdown-content">
+                            <div class="menu-section">
+                                <div class="menu-section-title">Gestión</div>
+                                <a href="factura.html" class="group">
+                                    <i data-lucide="file-text" class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-500"></i>
+                                    <span>Factura</span>
+                                </a>
+                                <a href="#ventas" class="group">
+                                    <i data-lucide="trending-up" class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-500"></i>
+                                    <span>Ventas</span>
+                                </a>
+                            </div>
+                            <div class="menu-section">
+                                <div class="menu-section-title">Cuenta</div>
+                                <a href="#" onclick="handleMenuClick('editar-perfil')" class="group">
+                                    <i data-lucide="user" class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-500"></i>
+                                    <span>Editar perfil</span>
+                                </a>
+                                <a href="#" onclick="handleMenuClick('cambiar-contrasena')" class="group">
+                                    <i data-lucide="key" class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-500"></i>
+                                    <span>Cambiar contraseña</span>
+                                </a>
+                                <a href="#" onclick="handleMenuClick('configuracion')" class="group">
+                                    <i data-lucide="settings" class="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-500"></i>
+                                    <span>Configuración</span>
+                                </a>
+                            </div>
+                            <div class="menu-section">
+                                <a href="#" onclick="handleMenuClick('cerrar-sesion')" class="group">
+                                    <i data-lucide="log-out" class="w-5 h-5 mr-3 text-gray-400 group-hover:text-red-500"></i>
+                                    <span class="text-red-500">Cerrar sesión</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <div class="container mx-auto p-4">
+        <!-- Tabs -->
+        <div class="flex space-x-2 mb-4">
+            <button class="tab-button px-4 py-2 bg-white rounded-t-lg" data-tab="dashboard">Tablero</button>
+            <button class="tab-button px-4 py-2 bg-white rounded-t-lg" data-tab="inventory">Inventario</button>
+            <button class="tab-button px-4 py-2 bg-white rounded-t-lg" data-tab="finances">Finanzas</button>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="tab-content active space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Tarjetas de estadísticas -->
+                <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-medium text-gray-500">Total de Productos</h3>
+                        <i data-lucide="package" class="w-8 h-8 text-blue-500"></i>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-900" id="totalProducts">0</p>
+                    <p class="text-sm text-gray-600 mt-2">
+                        <span class="text-green-500">↑ 12%</span>
+                        <span class="ml-1">vs mes anterior</span>
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-medium text-gray-500">Valor del Inventario</h3>
+                        <i data-lucide="dollar-sign" class="w-8 h-8 text-green-500"></i>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-900" id="totalValue">$0.00</p>
+                    <p class="text-sm text-gray-600 mt-2">
+                        <span class="text-green-500">↑ 8%</span>
+                        <span class="ml-1">vs mes anterior</span>
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-medium text-gray-500">Beneficio Total</h3>
+                        <i data-lucide="trending-up" class="w-8 h-8 text-indigo-500"></i>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-900" id="totalProfit">$0.00</p>
+                    <p class="text-sm text-gray-600 mt-2">
+                        <span class="text-red-500">↓ 3%</span>
+                        <span class="ml-1">vs mes anterior</span>
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-medium text-gray-500">Bajo Stock</h3>
+                        <i data-lucide="alert-triangle" class="w-8 h-8 text-yellow-500"></i>
+                    </div>
+                    <p class="text-2xl font-bold text-gray-900" id="lowStockItems">0</p>
+                    <p class="text-sm text-gray-600 mt-2">
+                        <span class="text-yellow-500">! Requiere atención</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Gráfico -->
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-gray-900">Resumen Financiero</h3>
+                    <div class="flex items-center space-x-2">
+                        <button class="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 transition-colors">Día</button>
+                        <button class="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 transition-colors">Semana</button>
+                        <button class="px-3 py-1 text-sm text-gray-900 font-medium bg-gray-100 rounded-md">Mes</button>
+                        <button class="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 transition-colors">Año</button>
+                    </div>
+                </div>
+                <canvas id="financialChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Inventario -->
+        <div id="inventory" class="tab-content space-y-4">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Inventario</h2>
+                    <button id="addProductBtn" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2  focus:ring-blue-500 focus:ring-offset-2">
+                        <i data-lucide="plus" class="w-5 h-5 mr-2"></i>
+                        Agregar Producto
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full bg-white shadow-md rounded-lg overflow-hidden">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-2 text-left">Nombre</th>
+                                <th class="px-4 py-2 text-left">Cantidad</th>
+                                <th class="px-4 py-2 text-left">Precio de Compra</th>
+                                <th class="px-4 py-2 text-left">Precio de Venta</th>
+                                <th class="px-4 py-2 text-left">Categoría</th>
+                                <th class="px-4 py-2 text-left">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="finances" class="tab-content space-y-4">
+            <div class="bg-white p-4 rounded-lg shadow overflow-x-auto">
+                <h3 class="text-lg font-bold mb-4">Resumen Financiero</h3>
+                <table class="w-full">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-2 text-left">Mes</th>
+                            <th class="px-4 py-2 text-left">Ingresos</th>
+                            <th class="px-4 py-2 text-left">Gastos</th>
+                            <th class="px-4 py-2 text-left">Beneficio</th>
+                        </tr>
+                    </thead>
+                    <tbody id="financialTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="addProductModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white p-8 rounded-lg relative max-w-md w-full">
+            <h2 class="text-2xl font-bold mb-4">Agregar Nuevo Producto</h2>
+            <form id="addProductForm">
+                <div class="mb-4">
+                    <label for="name" class="block text-sm font-medium text-gray-700">Nombre</label>
+                    <input type="text" id="name" name="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                </div>
+                <div class="mb-4">
+                    <label for="quantity" class="block text-sm font-medium text-gray-700">Cantidad</label>
+                    <input type="number" id="quantity" name="quantity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                </div>
+                <div class="mb-4">
+                    <label for="purchasePrice" class="block text-sm font-medium text-gray-700">Precio de Compra</label>
+                    <input type="number" id="purchasePrice" name="purchasePrice" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                </div>
+                <div class="mb-4">
+                    <label for="sellingPrice" class="block text-sm font-medium text-gray-700">Precio de Venta</label>
+                    <input type="number" id="sellingPrice" name="sellingPrice" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                </div>
+                <div class="mb-4">
+                    <label for="category" class="block text-sm font-medium text-gray-700">Categoría</label>
+                    <input type="text" id="category" name="category" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" id="cancelAddProduct" class="mr-2 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">Agregar Producto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Datos de ejemplo
+        let products = [];
+        const financialData = [
+            { month: 'Ene', income: 4000, expenses: 2400, profit: 1600 },
+            { month: 'Feb', income: 3000, expenses: 1398, profit: 1602 },
+            { month: 'Mar', income: 2000, expenses: 9800, profit: -7800 },
+            { month: 'Abr', income: 2780, expenses: 3908, profit: -1128 },
+            { month: 'May', income: 1890, expenses: 4800, profit: -2910 },
+            { month: 'Jun', income: 2390, expenses: 3800, profit: -1410 },
+            { month: 'Jul', income: 3490, expenses: 4300, profit: -810 },
+        ];
+
+        // Funcionalidad de pestañas
+        function setActiveTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                setActiveTab(button.dataset.tab);
+            });
+        });
+
+        // Funcionalidad para agregar producto
+        document.getElementById('addProductBtn').addEventListener('click', () => {
+            document.getElementById('addProductModal').classList.remove('hidden');
+            document.getElementById('addProductModal').classList.add('flex');
+        });
+
+        document.getElementById('cancelAddProduct').addEventListener('click', () => {
+            document.getElementById('addProductModal').classList.add('hidden');
+            document.getElementById('addProductModal').classList.remove('flex');
+        });
+
+        document.getElementById('addProductForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const newProduct = {
+                id: products.length + 1,
+                name: formData.get('name'),
+                quantity: Number(formData.get('quantity')),
+                purchasePrice: Number(formData.get('purchasePrice')),
+                sellingPrice: Number(formData.get('sellingPrice')),
+                category: formData.get('category'),
+            };
+            products.push(newProduct);
+            updateProductTable();
+            updateDashboard();
+            document.getElementById('addProductModal').classList.add('hidden');
+            document.getElementById('addProductModal').classList.remove('flex');
+            e.target.reset();
+        });
+
+        function updateProductTable() {
+            const tableBody = document.getElementById('productTableBody');
+            tableBody.innerHTML = '';
+            products.forEach(product => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-4 py-2">${product.name}</td>
+                    <td class="px-4 py-2">${product.quantity}</td>
+                    <td class="px-4 py-2">$${product.purchasePrice.toFixed(2)}</td>
+                    <td class="px-4 py-2">$${product.sellingPrice.toFixed(2)}</td>
+                    <td class="px-4 py-2">${product.category}</td>
+                    <td class="px-4 py-2">
+                        <button class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors" onclick="updateQuantity(${product.id})">Actualizar Cantidad</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function updateQuantity(id) {
+            const newQuantity = prompt('Ingrese la nueva cantidad:');
+            if (newQuantity !== null) {
+                const product = products.find(p => p.id === id);
+                if (product) {
+                    product.quantity = Number(newQuantity);
+                    updateProductTable();
+                    updateDashboard();
+                }
+            }
+        }
+
+        function updateDashboard() {
+            document.getElementById('totalProducts').textContent = products.length;
+            document.getElementById('totalValue').textContent = '$' + calculateTotalValue().toFixed(2);
+            document.getElementById('totalProfit').textContent = '$' + calculateTotalProfit().toFixed(2);
+            document.getElementById('lowStockItems').textContent = products.filter(p => p.quantity < 10).length;
+        }
+
+        function calculateTotalValue() {
+            return products.reduce((total, product) => total + product.quantity * product.sellingPrice, 0);
+        }
+
+        function calculateTotalProfit() {
+            return products.reduce((total, product) => 
+                total + (product.sellingPrice - product.purchasePrice) * product.quantity, 0
+            );
+        }
+
+        function updateFinancialTable() {
+            const tableBody = document.getElementById('financialTableBody');
+            tableBody.innerHTML = '';
+            financialData.forEach(data => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-4 py-2">${data.month}</td>
+                    <td class="px-4 py-2">$${data.income.toFixed(2)}</td>
+                    <td class="px-4 py-2">$${data.expenses.toFixed(2)}</td>
+                    <td class="px-4 py-2 ${data.profit >= 0 ? 'text-green-600' : 'text-red-600'}">
+                        $${Math.abs(data.profit).toFixed(2)}
+                        ${data.profit >= 0 ? '↑' : '↓'}
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Inicializar gráfico financiero
+        const ctx = document.getElementById('financialChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: financialData.map(d => d.month),
+                datasets: [
+                    {
+                        label: 'Ingresos',
+                        data: financialData.map(d => d.income),
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    },
+                    {
+                        label: 'Gastos',
+                        data: financialData.map(d => d.expenses),
+                        backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                    },
+                    {
+                        label: 'Beneficio',
+                        data: financialData.map(d => d.profit),
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Dropdown functionality
+        function toggleDropdown() {
+            document.getElementById("userDropdown").classList.toggle("show");
+        }
+
+        function handleMenuClick(option) {
+            console.log("Clicked:", option);
+            // Add your logic for each menu item here
+            toggleDropdown();
+        }
+
+        // Close the dropdown if the user clicks outside of it
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropdown button')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+
+        // Actualizaciones iniciales
+        updateProductTable();
+        updateDashboard();
+        updateFinancialTable();
+    </script>
+</body>
+</html>
